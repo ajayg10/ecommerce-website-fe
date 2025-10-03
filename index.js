@@ -1,29 +1,29 @@
-import express from 'express';
+import express from 'express';     
 import  jwt from 'jsonwebtoken';
 import { connectDB } from './db.js';
 import {User} from './schema.js';
 import { Product } from './schema.js';
 import { Cart } from './schema.js';
 import { Order } from './schema.js';
-const SECRET_KEY = "ajay@123";
-const Server = express();
+const SECRET_KEY = "ajay@123";   // Secret key for JWT signing and verification
+const Server = express();       // Initialize Express application(Server)
 
 
-Server.use(express.json());
+Server.use(express.json());    // Middleware to parse JSON request bodies
 
-Server.get('/', (req, res) => {
+Server.get('/', (req, res) => {             // Home route
   res.send('Home route is running');
 })
 
 
 
-Server.post('/register', async (req, res) => {
+Server.post('/register', async (req, res) => {       
     const name = req.body.name;
     const email = req.body.email;
     const password = req.body.password;
     const role = req.body.role;
 
-    try {
+    try {                               // Try to create a new user
         await User.create({ 
             name : name,
             email : email,
@@ -47,10 +47,10 @@ Server.post('/register', async (req, res) => {
 Server.get('/login', async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
-    const user = await User.findOne({email : email, password : password});
+    const user = await User.findOne({email : email, password : password});  
 
    try {
-        if(!user){
+        if(!user){                                  
         res.status(401).json({
             message : "User not found"
         })
@@ -84,14 +84,14 @@ Server.get('/login', async (req, res) => {
 
 
 
-Server.use((req, res, next) => {
-    const token = req.headers.authorization;
+Server.use((req, res, next) => {              // Middleware to verify JWT token for protected routes
+    const token = req.headers.authorization;   
     if(token){
       try {
-          const decoded = jwt.verify(token, SECRET_KEY);
+          const decoded = jwt.verify(token, SECRET_KEY);   
           if(decoded){
               console.log({"User Logged in" : decoded.name});
-              req.user = decoded;
+              req.user = decoded;  //
               next();
           }else{
               res.status(401).json({
@@ -206,16 +206,28 @@ Server.post('/add_to_cart', async (req, res) => {
 
 Server.get('/view_cart', async (req, res) => {
     try {
-        const cart = await Cart.findOne({userId : req.user._id})
-        res.json( cart || {message :"cart is empty"})
+        const cart = await Cart.findOne({ userId: req.user._id });
+
+        if (!cart) {
+            return res.json({ message: "Cart is empty" });
+        }
+            const totalPrice = cart.items.reduce((sum, item) => {
+                 return sum + (item.price * (item.quantity || 1));
+             },0);
+    
+
+            res.json({
+                cart,
+                totalPrice
+            });
+
     } catch (error) {
         res.status(500).json({
-            message : "Error in fetching cart",
+            message: "Error in fetching cart",
             error
-        })  
-        //sum of the prices of all items in the cart
+        });
     }
-})
+});
 
 
 
