@@ -1,10 +1,21 @@
 import mongoose from "mongoose";
+import dotenv from 'dotenv';
 
-export const connectDB = async() => {
- try {
-       await mongoose.connect("mongodb+srv://Ajay10:SWC%401406@cluster0.ejviz9r.mongodb.net/<ecomm>")
-       console.log("DB connected");
-   } catch (error) {
-        console.log("DB connection failed", error); 
-   }
-}
+dotenv.config();
+
+
+export const connectDB = async () => {
+  const uri = process.env.MONGO_URI;
+  if (!uri) {
+    console.error("FATAL ERROR: MONGO_URI is not set in environment.");
+    process.exit(1);
+  }
+
+  try {
+    await mongoose.connect(uri);
+    console.log("DB connected");
+  } catch (error) {
+    console.log("DB connection failed", error);
+    process.exit(1);
+  }
+};
