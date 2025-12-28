@@ -22,7 +22,7 @@ export default function App() {
   return (
     <>
       <Navbar />
-      <div style={{ padding: 16 }}>
+      <div  className="min-h-screen bg-slate-50 text-slate-800">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} />
