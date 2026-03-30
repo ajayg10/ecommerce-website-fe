@@ -14,12 +14,12 @@ import cors from 'cors';           // To enable CORS
 
 // Fail the application immediately if required secrets are missing
 if (!process.env.SECRET_KEY) {
-  console.error("FATAL ERROR: SECRET_KEY is not defined in .env");
-  process.exit(1);
+  console.error("FATAL ERROR: SECRET_KEY is not defined in environment");
+  if (!process.env.VERCEL) process.exit(1);
 }
 if (!process.env.MONGO_URI) {
-  console.error("FATAL ERROR: MONGO_URI is not defined in .env");
-  process.exit(1);
+  console.error("FATAL ERROR: MONGO_URI is not defined in environment");
+  if (!process.env.VERCEL) process.exit(1);
 }
 
 const SECRET_KEY = process.env.SECRET_KEY;

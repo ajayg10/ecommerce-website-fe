@@ -6,12 +6,15 @@ dotenv.config();
 
 
 export const connectDB = async () => {
-  // Fix for DNS resolution issues with mongodb+srv on some networks
-  dns.setServers(['8.8.8.8', '8.8.4.4']);
+  // Fix for DNS resolution issues with mongodb+srv on local Windows networks
+  if (!process.env.VERCEL) {
+    dns.setServers(['8.8.8.8', '8.8.4.4']);
+  }
   const uri = process.env.MONGO_URI;
   if (!uri) {
     console.error("FATAL ERROR: MONGO_URI is not set in environment.");
-    process.exit(1);
+    if (!process.env.VERCEL) process.exit(1);
+    return;
   }
 
   try {
@@ -19,6 +22,6 @@ export const connectDB = async () => {
     console.log("DB connected");
   } catch (error) {
     console.log("DB connection failed", error);
-    process.exit(1);
+    if (!process.env.VERCEL) process.exit(1);
   }
 };
