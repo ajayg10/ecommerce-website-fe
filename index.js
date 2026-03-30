@@ -1,16 +1,16 @@
 // ------------------------------
 // IMPORTS & INITIAL SETUP
 // ------------------------------
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import jwt from 'jsonwebtoken';         // For signing + verifying JWT auth tokens
-import dotenv from 'dotenv';            // For loading environment variables
 import bcrypt from 'bcrypt';            // For hashing + verifying passwords
 import { connectDB } from './db.js';    // MongoDB connection function
 import { User, Product, Cart, Order } from './schema.js';  // All DB models
 import cors from 'cors';           // To enable CORS
 
-// Load variables from .env → makes SECRET_KEY, MONGO_URI available in process.env
-dotenv.config();
 
 // Fail the application immediately if required secrets are missing
 if (!process.env.SECRET_KEY) {
@@ -29,7 +29,8 @@ const Server = express();
 Server.use(express.json());  // Allows Express to parse JSON request bodies
 
 
-const allowedOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5174';
+const allowedOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+console.log(`CORS: Allowing origin ${allowedOrigin}`);
 Server.use(cors({
   origin: allowedOrigin,
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
@@ -37,9 +38,9 @@ Server.use(cors({
 }));
 
 
-// ------------------------------
+
 // PUBLIC ROUTES (No Auth Required)
-// ------------------------------
+
 
 // Test route to confirm server is running
 Server.get('/', (req, res) => {
@@ -47,9 +48,9 @@ Server.get('/', (req, res) => {
 });
 
 
-// -----------------------------------------
+
 // USER REGISTRATION — Creates new user
-// -----------------------------------------
+
 Server.post('/register', async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -75,10 +76,8 @@ Server.post('/register', async (req, res) => {
 });
 
 
-
-// -----------------------------------------
 // LOGIN — Validates user + returns JWT token
-// -----------------------------------------
+
 Server.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -123,9 +122,9 @@ Server.post('/login', async (req, res) => {
 });
 
 
-// ----------------------------------------------------
+
 // AUTH MIDDLEWARE — Runs BEFORE protected routes below
-// ----------------------------------------------------
+
 Server.use(async (req, res, next) => {
   try {
     // These routes DO NOT require JWT token
@@ -171,9 +170,8 @@ Server.use(async (req, res, next) => {
 });
 
 
-// ------------------------------
+
 // PROTECTED ROUTES (Require Auth)
-// ------------------------------
 
 // Returns logged-in user's details
 Server.get('/profile', (req, res) => {
@@ -189,9 +187,8 @@ Server.get('/profile', (req, res) => {
 });
 
 
-// ---------------------------------------------------------
 // ADD PRODUCT — Only sellers can add products
-// ---------------------------------------------------------
+
 Server.post('/add_products', async (req, res) => {
   try {
     const { name, price, category } = req.body;
@@ -223,9 +220,9 @@ Server.post('/add_products', async (req, res) => {
 });
 
 
-// ---------------------------------------------------------
+
 // GET PRODUCTS BY SELLER (Query: /products?sellerId=...)
-// ---------------------------------------------------------
+
 Server.get('/products', async (req, res) => {
   try {
     const { sellerId } = req.query;
@@ -244,9 +241,9 @@ Server.get('/products', async (req, res) => {
 });
 
 
-// ---------------------------------------------------------
+
 // GET ALL PRODUCTS (Public Route) 
-// ---------------------------------------------------------
+
 Server.get('/all_products', async (req, res) => {
   try {
     const products = await Product.find();
@@ -259,9 +256,9 @@ Server.get('/all_products', async (req, res) => {
 });
 
 
-// ---------------------------------------------------------
+
 // ADD TO CART — Creates cart if not exists, updates quantity
-// ---------------------------------------------------------
+
 Server.post('/add_to_cart', async (req, res) => {
   try {
     const { productId, quantity } = req.body;
@@ -321,9 +318,9 @@ Server.post('/add_to_cart', async (req, res) => {
 });
 
 
-// ---------------------------------------------------------
+
 // VIEW CART — Returns items + total price
-// ---------------------------------------------------------
+
 Server.get('/view_cart', async (req, res) => {
   try {
     const cart = await Cart.findOne({ userId: req.user.id })
@@ -347,9 +344,9 @@ Server.get('/view_cart', async (req, res) => {
 });
 
 
-// ---------------------------------------------------------
+
 // PLACE ORDER — Converts cart → order, clears cart
-// ---------------------------------------------------------
+
 Server.post('/place_order', async (req, res) => {
   try {
     const cart = await Cart.findOne({ userId: req.user.id })
@@ -406,9 +403,9 @@ Server.post('/place_order', async (req, res) => {
 });
 
 
-// ---------------------------------------------------------
+
 // VIEW ORDERS FOR LOGGED-IN USER
-// ---------------------------------------------------------
+
 Server.get('/view_orders', async (req, res) => {
   try {
     const orders = await Order.find({ userId: req.user.id })
@@ -423,16 +420,16 @@ Server.get('/view_orders', async (req, res) => {
 });
 
 
-// ---------------------------------------------------------
+
 // START SERVER (Only after DB connection succeeds)
-// ---------------------------------------------------------
+
 const start = async () => {
   try {
     await connectDB();
     const port = process.env.PORT || 3000;
 
     Server.listen(port, () => {
-      console.log(`🚀 Server running at http://localhost:3000`);
+      console.log(`🚀 Server running at http://localhost:${port}`);
     });
 
   } catch (err) {
