@@ -423,19 +423,29 @@ Server.get('/view_orders', async (req, res) => {
 
 // START SERVER (Only after DB connection succeeds)
 
+
 const start = async () => {
   try {
     await connectDB();
-    const port = process.env.PORT || 3000;
-
-    Server.listen(port, () => {
-      console.log(`🚀 Server running at http://localhost:${port}`);
-    });
+    
+    // Only call listen if we're not in Vercel environment
+    if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+      const port = process.env.PORT || 3000;
+      Server.listen(port, () => {
+        console.log(`🚀 Server running at http://localhost:${port}`);
+      });
+    }
 
   } catch (err) {
-    console.error("Failed to start server:", err);
-    process.exit(1);
+    console.error("Failed to start server/db:", err);
+    // Don't exit in production/Vercel (it might just be a cold start failure)
+    if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+      process.exit(1);
+    }
   }
 };
 
 start();
+
+// Export for Vercel serverless function
+export default Server;
