@@ -29,10 +29,22 @@ const Server = express();
 Server.use(express.json());  // Allows Express to parse JSON request bodies
 
 
-const allowedOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
-console.log(`CORS: Allowing origin ${allowedOrigin}`);
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://blaze-commerce-950db0iv2-ajays-projects-7a7a0e53.vercel.app',
+  ...(process.env.CLIENT_ORIGIN ? [process.env.CLIENT_ORIGIN] : [])
+];
+
+console.log(`CORS: Allowing origins: ${allowedOrigins.join(', ')}`);
 Server.use(cors({
-  origin: allowedOrigin,
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization'],
 }));
