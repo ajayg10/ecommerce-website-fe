@@ -18,7 +18,11 @@ async function request(path, { method = "GET", body, headers = {} } = {}) {
 
   if (body) opts.body = JSON.stringify(body);
 
-  const res = await fetch(`${API_URL}${path}`, opts);
+  // Ensure API_URL doesn't end with a slash, and path starts with a slash
+  const cleanApiUrl = API_URL.replace(/\/+$/, "");
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  
+  const res = await fetch(`${cleanApiUrl}${cleanPath}`, opts);
 
   const text = await res.text();
   let data;
